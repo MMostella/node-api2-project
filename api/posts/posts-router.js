@@ -87,24 +87,10 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
-    // const { id } = req.params;
-
-    // Post.remove(id)
-    // .then(count => {
-    //   if (count > 0) {
-    //     res.status(200).json({ message: "The post with the specified ID does not exist" });
-    //   } else {
-    //     res.status(404).json({ message: "The post with the specified ID does not exist" });
-    //   }
-    // })
-    // .catch(error => {
-    //   console.log(error);
-    //   res.status(500).json({
-    //     message: "The post could not be removed"
-    //   });
-    // });
     try {
-        const deletedPost = await Post.remove(req.params.id);
+        const { id } = req.params;
+        const deletedPost = await Post.remove(id);
+
         if (!deletedPost) {
             res.status(404).json({
                 message: "The post with the specified ID does not exist"
@@ -121,7 +107,24 @@ router.delete('/:id', async (req, res) => {
 });
 
 router.get('/:id/comments', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const postId = await Post.findById(id);
+        const test = await Post.findPostComments(id);
 
+         if (!postId) {
+            res.status(404).json({
+                message: "The post with the specified ID does not exist"
+            })
+         } else {
+             res.status(200).json(test)
+         }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: "The comments information could not be retrieved"
+        })
+    }
 });
 
 module.exports = router;
