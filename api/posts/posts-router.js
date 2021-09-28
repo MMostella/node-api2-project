@@ -29,74 +29,59 @@ router.get('/:id', (req, res) => {
             }
         })
         .catch(err => {
+            console.log(err);
             res.status(500).json({
                 message: "The post information could not be retrieved"
             });
         });
 });
 
-router.post('/', async (req, res) => {
-    try {
-        const { title, contents } = req.body;
-        if (!title || !contents) {
+router.post('/', (req, res) => {
+    const { title, contents } = req.body;
+
+    Post.insert({ title, contents })
+        .then(post => {
+            if (!title || !contents) {
+                res.status(400).json({
+                    message: "Please provide title and contents for the post"
+                })
+            } else {
+                res.status(201).json(post)
+            }
+        })
+        .catch(err => {
+            console.log(err);
             res.status(400).json({
-                message: "Please provide title and contents for the post"
+                message: "There was an error while saving the post to the database"
             })
-        } else {
-            const newPost = await Post.insert({ title, contents })
-            res.status(201).json(newPost);
-        }
-    } catch (err) {
-        res.status(500).json({
-            message: "There was an error while saving the post to the database"
-        });
-    }
+        })
 });
 
 router.put('/:id', async (req, res) => {
-    const { id } = req.params;
-    const { title, content } = req.body;
-
     try {
-        const updatedPost = await Post.update(id, { title, content })
+        const { id } = req.params;
+        const { title, contents } = req.body;
+
         if (!id) {
             res.status(404).json({
                 message: "The post with the specified ID does not exist"
             })
         } else {
-            if (!title || !content) {
+            if (!title || !contents) {
                 res.status(400).json({
                     message: "Please provide title and contents for the post"
                 })
             } else {
-                res.status(200).json(updatedPost)
+                const updatedPost = await Post.update(id)
+                res.status(200).json(updatedPost);
             }
         }
     } catch (err) {
+        console.log(err);
         res.status(500).json({
             message: "The post information could not be modified"
-            })
-        }
-        // .then(post => {
-        //     if (!id) {
-        //         res.status(404).json({
-        //             message: "The post with the specified ID does not exist"
-        //         })
-        //     } else {
-        //         if (!title || !contents) {
-        //             res.status(400).json({
-        //                 message: "Please provide title and contents for the post"
-        //             })
-        //         } else {
-        //             res.status(200).json(post)
-        //         }
-        //     }
-        // })
-        // .catch(err => {
-        //     res.status(500).json({
-        //         message: "The post information could not be modified"
-        //     });
-        // });
+        })
+    }
 });
 
 router.delete('/:id', async (req, res) => {
@@ -126,6 +111,7 @@ router.delete('/:id', async (req, res) => {
             res.status(200).json(req.params.id)
         }
     } catch (err) {
+        console.log(err);
         res.status(500).json({
             message: "The post could not be removed"
         })
@@ -133,9 +119,8 @@ router.delete('/:id', async (req, res) => {
 });
 
 router.get('/:id/comments', async (req, res) => {
-    const { id } = req.params;
-
     try {
+        const { id } = req.params;
         const commentById = await Post.findCommentById(id);
         if (id) {
             res.status(200).json(commentById);
@@ -145,6 +130,7 @@ router.get('/:id/comments', async (req, res) => {
             })
         }
     } catch (err) {
+        console.log(err);
         res.status(500).json({
             message: "The comments information could not be retrieved"
         })
