@@ -89,17 +89,17 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedPost = await Post.remove(id);
+        const deletedPost = await Post.findById(id);
+        const removePost = await Post.remove(id);
 
-        if (!deletedPost) {
+        if (!removePost) {
             res.status(404).json({
                 message: "The post with the specified ID does not exist"
             })
         } else {
-            res.status(200).json(req.params.id)
+            res.status(200).json(deletedPost)
         }
     } catch (err) {
-        console.log(err);
         res.status(500).json({
             message: "The post could not be removed"
         })
@@ -109,7 +109,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/:id/comments', async (req, res) => {
     try {
         const { id } = req.params;
-        const postId = await Post.findById(id);
+        const postId = await Post.findCommentById(id);
         const test = await Post.findPostComments(id);
 
          if (!postId) {
